@@ -9,6 +9,7 @@ import { Agent } from '../agent.js';
 import { startRepl } from './repl.js';
 import { createConfig } from '../identity/loader.js';
 import { runInit } from './init.js';
+import { startRoom } from './room.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -22,6 +23,11 @@ async function main() {
 
   if (command === 'test') {
     await runTest(args.slice(1));
+    return;
+  }
+
+  if (command === 'room') {
+    await runRoomCommand(args.slice(1));
     return;
   }
 
@@ -189,6 +195,48 @@ async function runTest(args: string[]): Promise<void> {
   console.log(`\n  ${green}All checks passed.${reset}\n`);
 }
 
+async function runRoomCommand(args: string[]): Promise<void> {
+  const configPaths: string[] = [];
+  let topic: string | undefined;
+  let rounds: number | undefined;
+  let provider: string | undefined;
+  let model: string | undefined;
+
+  for (let i = 0; i < args.length; i++) {
+    if ((args[i] === '-t' || args[i] === '--topic') && args[i + 1]) {
+      topic = args[++i];
+    } else if ((args[i] === '-r' || args[i] === '--rounds') && args[i + 1]) {
+      rounds = parseInt(args[++i], 10);
+    } else if ((args[i] === '-p' || args[i] === '--provider') && args[i + 1]) {
+      provider = args[++i];
+    } else if ((args[i] === '-m' || args[i] === '--model') && args[i + 1]) {
+      model = args[++i];
+    } else if (!args[i].startsWith('-')) {
+      configPaths.push(args[i]);
+    }
+  }
+
+  if (configPaths.length === 0) {
+    console.error('Usage: ark room <agent1.yaml> <agent2.yaml> [...] [-t topic] [-r rounds]');
+    process.exit(1);
+  }
+
+  const agents: Agent[] = [];
+  for (const cp of configPaths) {
+    const absPath = resolve(cp);
+    if (!existsSync(absPath)) {
+      console.error(`Config file not found: ${absPath}`);
+      process.exit(1);
+    }
+    const agent = new Agent({ configPath: absPath });
+    if (provider) agent.config.llm.provider = provider;
+    if (model) agent.config.llm.model = model;
+    agents.push(agent);
+  }
+
+  await startRoom(agents, { topic, rounds });
+}
+
 async function startAgent(configPath?: string, provider?: string, model?: string): Promise<void> {
   if (!configPath) {
     const defaults = ['agent.yaml', 'agent.yml', 'ark.yaml', 'ark.yml'];
@@ -239,13 +287,14 @@ Usage:
   ark start [config.yaml]         Start agent (same as above)
   ark init                        Create a new agent interactively
   ark test [config.yaml]          Quick smoke test
-  ark -p ollama -m qwen3:14b      Start with specific provider/model
+  ark room <a.yaml> <b.yaml> ...  Multi-agent chat room
   ark --help                      Show this help
 
 Commands:
   init                     Create a new agent config interactively
   start [config]           Start an agent REPL
   test [config]            Run a quick smoke test (boot, connect, chat, tools)
+  room <configs...>        Start a multi-agent chat room
 
 Options:
   -c, --config <path>      Path to agent YAML config
@@ -254,10 +303,17 @@ Options:
   -h, --help               Show help
   -v, --version            Show version
 
+Room Options:
+  -t, --topic <text>       Conversation topic
+  -r, --rounds <n>         Max rounds (default: 20)
+  -p, --provider <name>    Override provider for all agents
+  -m, --model <name>       Override model for all agents
+
 Quick Start:
-  ark init                         # Create my-agent.yaml
-  ark start my-agent.yaml          # Start chatting
-  ark test -p ollama -m qwen3:14b  # Test with local Ollama
+  ark init                                    # Create my-agent.yaml
+  ark start my-agent.yaml                     # Start chatting
+  ark test -p ollama -m qwen3:14b             # Test with local Ollama
+  ark room agents/alpha.yaml agents/beta.yaml # Multi-agent chat
 `);
 }
 
