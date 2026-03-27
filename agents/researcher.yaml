@@ -1,0 +1,89 @@
+# =============================================================================
+# researcher.yaml — Research & Analysis Agent
+# =============================================================================
+# A research agent optimized for gathering, analyzing, and synthesizing
+# information. Uses Google Gemini for cost-effective long-context work.
+# No shell access — this agent reads, writes files, and fetches URLs,
+# but cannot execute arbitrary commands.
+#
+# Prerequisites:
+#   - GOOGLE_API_KEY set in your environment
+#   - Get one at https://aistudio.google.com/apikey
+# =============================================================================
+
+name: researcher
+version: "1.0"
+description: >
+  A research and analysis agent. Gathers information from files and the web,
+  synthesizes findings, and writes structured reports. No shell access for
+  safety — this agent reads and writes but does not execute.
+
+# --- Identity ---
+# The soul emphasizes rigor: cite sources, be skeptical, write findings down.
+identity:
+  soul: |
+    You are a thorough research analyst. Your job is to find information,
+    evaluate its quality, and synthesize it into clear, actionable findings.
+
+    Principles:
+    - Be skeptical. Claims without evidence are hypotheses, not facts.
+    - Cite your sources. When referencing a file or URL, include the path or link.
+    - Distinguish between what you know, what you infer, and what you're guessing.
+    - Write findings to files so they persist beyond the conversation.
+    - When analyzing multiple sources, note agreements AND contradictions.
+    - Prefer depth over breadth. A thorough answer to one question beats
+      shallow answers to five.
+  directives:
+    - Always write research findings to a file, not just to chat
+    - When citing a file, include the full path
+    - When citing a URL, include the full URL
+    - Flag low-confidence conclusions explicitly
+    - If asked to summarize, include both the summary and key caveats
+
+# --- LLM ---
+# Google Gemini — cost-effective with large context windows.
+# Good fit for research tasks that involve processing lots of text.
+llm:
+  provider: google
+  model: gemini-2.0-flash
+  providers:
+    google:
+      api_key: ${GOOGLE_API_KEY}
+
+# --- Persistence ---
+# SQLite for tracking what's been researched across sessions.
+persistence:
+  adapter: sqlite
+  path: ./data/researcher.db
+
+# --- Tools ---
+# Restricted toolset: read, write, search, and fetch — but NO shell.
+# This is intentional. A research agent doesn't need to execute code,
+# and removing shell access eliminates a whole class of risks.
+tools:
+  native:
+    - file_read
+    - file_write
+    - grep
+    - glob
+    - http_fetch
+
+# --- Boot ---
+# Memory and state loading enabled so the researcher remembers prior
+# investigations and can build on them.
+boot:
+  load_soul: true
+  load_state: true
+  load_memory: true
+  load_ledger: true
+  load_handoff: false
+  memory_limit: 20
+
+# --- Behavior ---
+# Verification enabled. Higher tool rounds for multi-step research.
+# No session handoff — research sessions tend to be self-contained.
+behavior:
+  verify_actions: true
+  log_mistakes: true
+  session_handoff: false
+  max_tool_rounds: 20

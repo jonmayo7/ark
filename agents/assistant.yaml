@@ -1,0 +1,78 @@
+# =============================================================================
+# assistant.yaml — General-Purpose Assistant
+# =============================================================================
+# The "hello world" agent. Runs locally via Ollama, persists to SQLite,
+# has access to all native tools. Good starting point for customization.
+#
+# Prerequisites:
+#   - Ollama running locally (https://ollama.com)
+#   - Pull a model: `ollama pull llama3.1:8b`
+# =============================================================================
+
+name: assistant
+version: "1.0"
+description: >
+  A general-purpose helpful assistant. Runs entirely local via Ollama.
+  Good default for everyday tasks — file management, quick questions,
+  light scripting.
+
+# --- Identity ---
+# The soul is the system prompt injected at conversation start.
+# Directives are appended as bullet-point rules after the soul.
+identity:
+  soul: |
+    You are a helpful, capable AI assistant running locally.
+    Be direct and concise. Prioritize getting things done over lengthy explanations.
+    When you use tools, verify the result before reporting success.
+    If a task is ambiguous, ask one clarifying question rather than guessing.
+  directives:
+    - Prefer short answers unless the user asks for detail
+    - When editing files, read first — never blind-write
+    - If a command fails, diagnose before retrying
+
+# --- LLM ---
+# Ollama provides a local, private inference server.
+# No API key needed — just a running Ollama instance.
+llm:
+  provider: ollama
+  model: llama3.1:8b
+  providers:
+    ollama:
+      base_url: http://localhost:11434/v1
+
+# --- Persistence ---
+# SQLite is the simplest durable option. One file, no external services.
+# The path is relative to wherever Ark is launched from.
+persistence:
+  adapter: sqlite
+  path: ./data/assistant.db
+
+# --- Tools ---
+# Full native toolset. This agent can read/write files, run shell commands,
+# and search the filesystem.
+tools:
+  native:
+    - file_read
+    - file_write
+    - shell
+    - glob
+    - grep
+
+# --- Boot ---
+# What to load from persistence when the agent starts.
+# Everything enabled — this agent remembers across sessions.
+boot:
+  load_soul: true
+  load_state: true
+  load_memory: true
+  load_ledger: true
+  load_handoff: true
+  memory_limit: 10
+
+# --- Behavior ---
+# Guardrails and operational settings.
+behavior:
+  verify_actions: true
+  log_mistakes: true
+  session_handoff: true
+  max_tool_rounds: 5

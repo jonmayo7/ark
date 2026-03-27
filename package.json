@@ -1,0 +1,50 @@
+{
+  "name": "ark-agent",
+  "version": "0.1.0",
+  "description": "Model-agnostic portable agent runtime. Create persistent, self-correcting AI agents that run anywhere.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ark": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli/index.ts",
+    "test": "tsx --test tests/**/*.test.ts",
+    "start": "node dist/cli/index.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "llm",
+    "runtime",
+    "model-agnostic",
+    "persistent",
+    "self-correcting",
+    "anthropic",
+    "openai",
+    "ollama",
+    "gemini",
+    "cli"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OWNER/ark.git"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^22.10.0",
+    "@types/better-sqlite3": "^7.6.12"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

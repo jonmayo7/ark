@@ -1,0 +1,23 @@
+Ark E2E Test Results
+==================================================
+Date: 2026-03-27T02:38:57.119Z
+Model: qwen3:14b via Ollama (local)
+Duration: 77.6s
+Result: 8/8 passed
+
+[PASS] Boot Context Assembly (0.0s)
+  Boot context complete: soul ✓, directives ✓, date ✓, tool-awareness ✓ | Prompt length: 569 chars
+[PASS] Cascade Provider Availability (0.0s)
+  Provider available: true | Tools registered: 6 (file_read, file_write, file_edit, shell, glob, grep)
+[PASS] Simple Conversation (math) (6.4s)
+  Response: "56" | Tokens: 945in/49out
+[PASS] Tool Use — File Write (19.0s)
+  File written: ark runtime works | Tools used: file_write | Tool calls: 1
+[PASS] Tool Use — File Read (18.3s)
+  Response: "The secret code is ALPHA-7749." | Tools: file_read
+[PASS] Tool Use — Shell Command (16.9s)
+  Response: "2026" | Tool calls: 1
+[PASS] Multi-Turn Context (17.0s)
+  Multi-turn maintained context. Messages: 4. Response: "The number you asked me to remember is 42."
+[PASS] Persistence Across Instances (0.0s)
+  All persistence checks passed: state ✓, mind ✓, ledger ✓, handoff ✓, boot-context ✓
