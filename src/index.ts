@@ -50,6 +50,12 @@ export type { BootContext, AgentHooks } from './identity/index.js';
 export { TelegramAdapter, startTelegram, splitMessage } from './interfaces/telegram.js';
 export type { TelegramAdapterOptions } from './interfaces/telegram.js';
 
+// Learning / Self-Correction
+export { createLearningEngine } from './learning/index.js';
+export type { LearningEngine, PromotionResult } from './learning/index.js';
+export { processMarkers, getMarkerInstructions } from './learning/markers.js';
+export type { MarkerResult, ProcessedMarker, MarkerError } from './learning/markers.js';
+
 // Proactive Messaging
 export { TaskQueue } from './proactive/index.js';
 export type { TaskQueueEntry, NewTask, TaskQueueOptions, DeliveryHandler } from './proactive/index.js';
